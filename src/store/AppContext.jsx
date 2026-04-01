@@ -194,14 +194,24 @@ export const AppProvider = ({ children }) => {
 
   // --- AUTH SECTION ---
   const register = async (email, password, name, phone, role) => {
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    console.log('[Auth] Attempting registration for:', email, 'as', role);
+    const { data: authData, error: authError } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: { full_name: name, role: role } // Optional metadata
+      }
+    });
+
     if (authError) {
+      console.error('[Auth] signUp Error:', authError);
       addToast('error', 'Registration Failed', authError.message);
       return { error: authError };
     }
     
-    // Create Profile
+    // Create Profile in public.profiles
     if (authData.user) {
+      console.log('[Auth] Auth record created. Inserting profile...');
       const { error: profileError } = await supabase.from('profiles').insert({
         id: authData.user.id,
         email,
@@ -213,21 +223,27 @@ export const AppProvider = ({ children }) => {
       });
       
       if (profileError) {
+        console.error('[Auth] profile insert Error:', profileError);
         addToast('error', 'Profile Sync Failed', profileError.message);
         return { error: profileError };
       }
       
+      console.log('[Auth] Registration complete.');
       addToast('success', 'Account Created!', `Welcome to TURFX, ${name}.`);
       return { data: authData };
     }
+    return { error: { message: 'Unexpected registration state' } };
   };
 
   const loginWithSupabase = async (email, password) => {
+    console.log('[Auth] Attempting login:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      console.error('[Auth] login Error:', error);
       addToast('error', 'Authentication Failed', error.message);
       return { error };
     }
+    console.log('[Auth] Login successful.');
     addToast('success', 'Identity Verified', 'Welcome back to the dashboard.');
     return { data };
   };
