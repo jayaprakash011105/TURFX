@@ -141,11 +141,32 @@ function Gateway() {
 
 
 function SubSystemAuth({ role, children }) {
-  const { currentPanel } = useApp();
-  // Automatically force the login view to match the requested role link if they're not logged into this role.
-  if (currentPanel !== role) {
+  const { currentPanel, currentUser, session, signOut } = useApp();
+  
+  // 1. Not Authenticated: Force Login for specific role
+  if (!session || !currentUser) {
     return <LoginPage overrideRole={role} />;
   }
+
+  // 2. Authenticated but WRONG ROLE: Access Denied
+  if (currentUser.role !== role) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', padding: 20 }}>
+        <div className="card animate-fade" style={{ maxWidth: 400, textAlign: 'center', padding: 40, border: '1px solid var(--accent-red)' }}>
+          <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(239,68,68,0.1)', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <Shield size={40} strokeWidth={2.5} />
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Access Denied</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>Your operative profile (<b>{currentUser.role.toUpperCase()}</b>) is not authorized to access the <b>{role.toUpperCase()}</b> deployment center.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+             <button className="btn btn-primary" style={{ height: 50, fontWeight: 800 }} onClick={() => window.location.href = '/'}>RETURN_TO_BASE</button>
+             <button className="btn btn-ghost" style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-red)' }} onClick={signOut}>TERMINATE_SESSION</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return children;
 }
 
