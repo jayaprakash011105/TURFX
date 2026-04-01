@@ -192,17 +192,56 @@ export const AppProvider = ({ children }) => {
     }
   }, [notificationEmail, addToast]);
 
-  // Auth
-  const login = (role) => {
-    if (role === 'user') { setCurrentUser(LOGGED_IN_USER); setCurrentPanel('user'); }
-    else if (role === 'owner') { setCurrentUser(LOGGED_IN_OWNER); setCurrentPanel('owner'); }
-    else if (role === 'admin') { setCurrentUser(LOGGED_IN_ADMIN); setCurrentPanel('admin'); }
-    addToast('success', 'Welcome Back!', `Logged in as ${role}`);
+  // --- AUTH SECTION ---
+  const register = async (email, password, name, phone, role) => {
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    if (authError) {
+      addToast('error', 'Registration Failed', authError.message);
+      return { error: authError };
+    }
+    
+    // Create Profile
+    if (authData.user) {
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: authData.user.id,
+        email,
+        name,
+        phone,
+        role,
+        status: 'active',
+        created_at: new Date().toISOString()
+      });
+      
+      if (profileError) {
+        addToast('error', 'Profile Sync Failed', profileError.message);
+        return { error: profileError };
+      }
+      
+      addToast('success', 'Account Created!', `Welcome to TURFX, ${name}.`);
+      return { data: authData };
+    }
   };
-  const logout = () => {
+
+  const loginWithSupabase = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      addToast('error', 'Authentication Failed', error.message);
+      return { error };
+    }
+    addToast('success', 'Identity Verified', 'Welcome back to the dashboard.');
+    return { data };
+  };
+
+  const login = (role) => {
+    // SECURITY WARNING: Sandbox access restricted
+    addToast('warning', 'Access Denied', 'Please use your verified credentials.');
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
     setCurrentPanel('login');
-    addToast('info', 'Logged Out', 'See you next time!');
+    addToast('info', 'Session Terminated', 'Security logout successful.');
   };
 
   // TURF CRUD
