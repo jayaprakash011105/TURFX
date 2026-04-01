@@ -12,6 +12,7 @@ export const AppProvider = ({ children }) => {
   const [currentPanel, setCurrentPanel] = useState('login'); // 'login' | 'user' | 'owner' | 'admin'
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [initialized, setInitialized] = useState(false);
 
   const [turfs, setTurfs] = useState(mockTurfs);
   const [users, setUsers] = useState([...mockUsers, ...mockOwners]);
@@ -47,7 +48,11 @@ export const AppProvider = ({ children }) => {
     // 2. Auth Handshake
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
+      if (session) {
+        fetchProfile(session.user.id).finally(() => setInitialized(true));
+      } else {
+        setInitialized(true);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -155,7 +160,7 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider value={{
       currentPanel, setCurrentPanel,
       currentUser, setCurrentUser,
-      session, signIn, signUp, signOut,
+      session, signIn, signUp, signOut, initialized,
       turfs, setTurfs, addTurf, updateTurf, approveTurf,
       bookings, setBookings, createBooking,
       slots, setSlots,

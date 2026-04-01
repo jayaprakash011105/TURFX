@@ -140,8 +140,30 @@ function Gateway() {
 }
 
 
+function DeploymentPort() {
+  const { initialized } = useApp();
+  const deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
+
+  if (!initialized) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+         <div className="status-dot online" style={{ width: 12, height: 12, boxShadow: '0 0 20px var(--accent-green)' }} />
+         <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>INITIATING_TURFX_PROTOCOLS...</div>
+      </div>
+    );
+  }
+
+  // PORTAL SELECTION BASED ON DEPLOY TARGET
+  switch (deployTarget) {
+    case 'user': return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
+    case 'owner': return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
+    case 'admin': return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
+    default: return <Gateway />;
+  }
+}
+
 function SubSystemAuth({ role, children }) {
-  const { currentPanel, currentUser, session, signOut } = useApp();
+  const { currentUser, session, signOut } = useApp();
   
   // 1. Not Authenticated: Force Login for specific role
   if (!session || !currentUser) {
@@ -258,29 +280,12 @@ function AdminApp() {
 
 // Root
 export default function App() {
-  const deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
-  console.log('[TURFX] Initializing Deployment Silhouette:', deployTarget || 'Gatekeeper');
-
   return (
     <>
       <Routes>
-        {/* Isolated Deployment Routing */}
-        {deployTarget === 'user' && (
-           <Route path="/" element={<SubSystemAuth role="user"><UserApp /></SubSystemAuth>} />
-        )}
-        {deployTarget === 'owner' && (
-           <Route path="/" element={<SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>} />
-        )}
-        {deployTarget === 'admin' && (
-           <Route path="/" element={<SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>} />
-        )}
-
-        {/* Global Gateway (Local Dev only) */}
-        {!deployTarget && (
-          <Route path="/" element={<Gateway />} />
-        )}
+        <Route path="/" element={<DeploymentPort />} />
         
-        {/* Shared Subsystem Routes (for deep links) */}
+        {/* Shared Subsystem Routes (Local Gateway & Deep Links) */}
         <Route path="/app/*" element={
           <SubSystemAuth role="user">
             <UserApp />
