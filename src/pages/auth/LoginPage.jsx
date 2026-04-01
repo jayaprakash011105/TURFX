@@ -19,17 +19,26 @@ export default function LoginPage({ overrideRole }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log('[Login] Form submission started. Mode:', mode);
     
     try {
       if (mode === 'login') {
         const result = await loginWithSupabase(form.email, form.password);
-        if (result?.error) setLoading(false);
+        if (result?.error) {
+          setLoading(false);
+        }
       } else {
         const result = await register(form.email, form.password, form.name, form.phone, role);
-        if (result?.error) setLoading(false);
-        else setMode('login'); // Success, move to login
+        if (result?.error) {
+          setLoading(false);
+        } else {
+          // Success, wait for redirect or flip to login
+          setLoading(false);
+          setMode('login');
+        }
       }
     } catch (err) {
+      console.error('[Login] Unexpected form error:', err);
       setLoading(false);
     }
   };
@@ -147,7 +156,7 @@ export default function LoginPage({ overrideRole }) {
             </div>
 
             <button type="submit" disabled={loading} className="btn btn-primary btn-lg btn-full" style={{ background: activeRole.color, color: role === 'user' ? '#000' : '#fff', marginTop: 4 }}>
-              {loading ? 'Initializing Secure Session...' : mode === 'login' ? 'Sign In' : 'Register Securely'}
+              {loading ? 'Verifying Identity...' : mode === 'login' ? 'Continue Access' : 'Register Securely'}
             </button>
           </form>
 

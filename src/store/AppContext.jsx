@@ -45,6 +45,24 @@ export const AppProvider = ({ children }) => {
     lowOccupancyDrop: { active: true, multiplier: 0.90 },
   });
 
+  const addToast = useCallback((type, title, message) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts(p => [...p, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts(p => p.filter(t => t.id !== id));
+    }, 5000);
+  }, []);
+
+  // Check Configuration Integrity
+  useEffect(() => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('[Supabase] CRITICAL: Environment variables missing!');
+      addToast('error', 'Cloud Disconnected', 'VITE_SUPABASE_URL is missing. Please contact your administrator or check Vercel settings.');
+    } else {
+      console.log('[Supabase] Client initialized successfully.');
+    }
+  }, [addToast]);
+
   // Persist State to LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('turfx_state');
@@ -91,15 +109,12 @@ export const AppProvider = ({ children }) => {
   // SUPABASE REAL-TIME RECOVERY ENGINE
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Fetch Turfs
       const { data: tData } = await supabase.from('turfs').select('*');
       if (tData) setTurfs(tData);
 
-      // 2. Fetch Bookings
       const { data: bData } = await supabase.from('bookings').select('*');
       if (bData) setBookings(bData);
 
-      // 3. Fetch Slots (Next 7 days)
       const { data: sData } = await supabase.from('slots').select('*');
       if (sData) {
         const grouped = {};
@@ -113,7 +128,6 @@ export const AppProvider = ({ children }) => {
     
     fetchData();
 
-    // 4. SUPABASE REAL-TIME CHANNEL (The Global Pulse)
     const channel = supabase.channel('platform-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'turfs' }, payload => {
         if (payload.eventType === 'INSERT') setTurfs(p => [...p, payload.new]);
@@ -138,7 +152,6 @@ export const AppProvider = ({ children }) => {
       })
       .subscribe();
 
-    // 5. Auth Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
@@ -155,11 +168,7 @@ export const AppProvider = ({ children }) => {
       supabase.removeChannel(channel);
     };
   }, []);
-  const addToast = useCallback((type, title, message) => {
-    const id = Date.now().toString();
-    setToasts(p => [...p, { id, type, title, message }]);
-    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
-  }, []);
+
   const removeToast = useCallback((id) => setToasts(p => p.filter(t => t.id !== id)), []);
 
   const addActivity = useCallback((action, category, details, user = 'System', status = 'success') => {
@@ -172,7 +181,7 @@ export const AppProvider = ({ children }) => {
       status,
       time: 'Just now'
     };
-    setActivityLogs(p => [newLog, ...p].slice(0, 50)); // Keep last 50
+    setActivityLogs(p => [newLog, ...p].slice(0, 50));
   }, []);
 
   const addNotification = useCallback((type, title, message, sub = '') => {
@@ -186,20 +195,19 @@ export const AppProvider = ({ children }) => {
     };
     setNotifications(p => [newNotif, ...p]);
     
-    // Simulate Email Dispatch for Important Alerts
     if (['booking', 'payment', 'security', 'alert'].includes(type) || true) {
       console.log(`[SIMULATED EMAIL DISPATCH] To: ${notificationEmail} | Subject: ${title} | Body: ${message}`);
     }
-  }, [notificationEmail, addToast]);
+  }, [notificationEmail]);
 
-  // --- AUTH SECTION ---
+  // --- AUTH SECTION (HARDENED) ---
   const register = async (email, password, name, phone, role) => {
     console.log('[Auth] Attempting registration for:', email, 'as', role);
     const { data: authData, error: authError } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
-        data: { full_name: name, role: role } // Optional metadata
+        data: { full_name: name, role: role }
       }
     });
 
@@ -209,7 +217,6 @@ export const AppProvider = ({ children }) => {
       return { error: authError };
     }
     
-    // Create Profile in public.profiles
     if (authData.user) {
       console.log('[Auth] Auth record created. Inserting profile...');
       const { error: profileError } = await supabase.from('profiles').insert({
@@ -229,7 +236,7 @@ export const AppProvider = ({ children }) => {
       }
       
       console.log('[Auth] Registration complete.');
-      addToast('success', 'Account Created!', `Welcome to TURFX, ${name}.`);
+      addToast('success', 'Account Created!', `Welcome to TURFX, ${name}. Please sign in.`);
       return { data: authData };
     }
     return { error: { message: 'Unexpected registration state' } };
@@ -249,7 +256,6 @@ export const AppProvider = ({ children }) => {
   };
 
   const login = (role) => {
-    // SECURITY WARNING: Sandbox access restricted
     addToast('warning', 'Access Denied', 'Please use your verified credentials.');
   };
 
