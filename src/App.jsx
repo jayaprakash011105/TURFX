@@ -258,7 +258,8 @@ function AdminApp() {
 
 // Root
 export default function App() {
-  const deployTarget = import.meta.env.VITE_DEPLOY_TARGET; // 'user' | 'owner' | 'admin' | undefined
+  const deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
+  console.log('[TURFX] Initializing Deployment Silhouette:', deployTarget || 'Gatekeeper');
 
   return (
     <>
