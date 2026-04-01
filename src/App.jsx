@@ -142,7 +142,17 @@ function Gateway() {
 
 function DeploymentPort() {
   const { initialized } = useApp();
-  const deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
+  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
+
+  // SMART ROUTING: If no env var, check the URL Hostname (Autonomous Selection)
+  if (!deployTarget && typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('admin')) deployTarget = 'admin';
+    else if (host.includes('owner')) deployTarget = 'owner';
+    else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
+  }
+
+  console.log('[TURFX] Autonomous Silhouette Detection:', deployTarget || 'Gateway-Dev');
 
   if (!initialized) {
     return (
@@ -153,11 +163,11 @@ function DeploymentPort() {
     );
   }
 
-  // PORTAL SELECTION BASED ON DEPLOY TARGET
+  // PORTAL SELECTION BASED ON HEURISTIC
   switch (deployTarget) {
-    case 'user': return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
-    case 'owner': return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
     case 'admin': return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
+    case 'owner': return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
+    case 'user': case 'player': return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
     default: return <Gateway />;
   }
 }
