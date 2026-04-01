@@ -175,20 +175,25 @@ const GlobalLoader = () => (
 );
 
 function SubSystemAuth({ role, children }) {
-  const { currentUser, session, signOut } = useApp();
+  const { currentUser, session, signOut, initialized } = useApp();
   
   // 1. Not Authenticated: Force Login for specific role
-  if (!session || !currentUser) {
+  if (!session) {
     return <LoginPage overrideRole={role} />;
   }
 
-  // 2. Authenticated but WRONG ROLE: Access Denied
+  // 2. Waiting for Profile Handshake
+  if (!currentUser || !initialized) {
+    return <GlobalLoader />;
+  }
+
+  // 3. Authenticated but WRONG ROLE: Access Denied
   if (currentUser.role !== role) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', padding: 20 }}>
         <div className="card animate-fade" style={{ maxWidth: 400, textAlign: 'center', padding: 40, border: '1px solid var(--accent-red)' }}>
           <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(239,68,68,0.1)', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-            <Shield size={40} strokeWidth={2.5} />
+            <Shield size={40} strokeWidth={2.5} stroke="#ef4444" />
           </div>
           <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Access Denied</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>Your operative profile (<b>{currentUser.role.toUpperCase()}</b>) is not authorized to access the <b>{role.toUpperCase()}</b> deployment center.</p>
