@@ -237,12 +237,28 @@ function AdminApp() {
 
 // Root
 export default function App() {
+  const deployTarget = import.meta.env.VITE_DEPLOY_TARGET; // 'user' | 'owner' | 'admin' | undefined
+
   return (
     <>
       <Routes>
-        <Route path="/" element={<Gateway />} />
+        {/* Isolated Deployment Routing */}
+        {deployTarget === 'user' && (
+           <Route path="/" element={<SubSystemAuth role="user"><UserApp /></SubSystemAuth>} />
+        )}
+        {deployTarget === 'owner' && (
+           <Route path="/" element={<SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>} />
+        )}
+        {deployTarget === 'admin' && (
+           <Route path="/" element={<SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>} />
+        )}
+
+        {/* Global Gateway (Local Dev only) */}
+        {!deployTarget && (
+          <Route path="/" element={<Gateway />} />
+        )}
         
-        {/* User App Subsystem */}
+        {/* Shared Subsystem Routes (for deep links) */}
         <Route path="/app/*" element={
           <SubSystemAuth role="user">
             <UserApp />
