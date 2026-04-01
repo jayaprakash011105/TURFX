@@ -237,64 +237,43 @@ function AdminApp() {
 
 // Root
 export default function App() {
-  const url = window.location.href.toLowerCase();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const hostname = window.location.hostname.toLowerCase();
+  const search = window.location.search.toLowerCase();
+  
+  // High-Relay Domain Detection
+  const isAdmin = hostname.includes('admin') || search.includes('env=admin');
+  const isOwner = hostname.includes('owner') || search.includes('env=owner');
+  const isPlayer = hostname.includes('player') || hostname.includes('myturfx') || search.includes('env=player');
 
-  let AppContent;
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (url.includes('admin')) {
-    AppContent = (
-      <SubSystemAuth role="admin">
-        <AdminApp />
-      </SubSystemAuth>
-    );
-  } else if (url.includes('owner')) {
-    AppContent = (
-      <SubSystemAuth role="owner">
-        <OwnerApp />
-      </SubSystemAuth>
-    );
-  } else if (url.includes('player') || url.includes('myturfx')) {
-    AppContent = (
-      <SubSystemAuth role="user">
-        <UserApp />
-      </SubSystemAuth>
-    );
-  } else {
-    // Fallback block for local gateway
-    AppContent = (
-      <Routes>
-        <Route path="/" element={<Gateway />} />
-        
-        {/* User App Subsystem */}
-        <Route path="/app/*" element={
-          <SubSystemAuth role="user">
-            <UserApp />
-          </SubSystemAuth>
-        } />
-        
-        {/* Owner Portal Subsystem */}
-        <Route path="/owner/*" element={
-          <SubSystemAuth role="owner">
-            <OwnerApp />
-          </SubSystemAuth>
-        } />
-        
-        {/* Admin Portal Subsystem */}
-        <Route path="/admin/*" element={
-          <SubSystemAuth role="admin">
-            <AdminApp />
-          </SubSystemAuth>
-        } />
-        
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
-  }
+  if (!isLoaded) return <div style={{ background: '#0a0a0f', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ color: 'var(--accent-green)', fontFamily: 'monospace', fontSize: 10, letterSpacing: 2 }}>INITIALIZING_TURFX_ENGINE...</div>
+  </div>;
 
   return (
     <>
-      {AppContent}
+      <Routes>
+        {isAdmin ? (
+          <Route path="/*" element={<SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>} />
+        ) : isOwner ? (
+          <Route path="/*" element={<SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>} />
+        ) : isPlayer ? (
+          <Route path="/*" element={<SubSystemAuth role="user"><UserApp /></SubSystemAuth>} />
+        ) : (
+          <>
+            <Route path="/" element={<Gateway />} />
+            <Route path="/app/*" element={<SubSystemAuth role="user"><UserApp /></SubSystemAuth>} />
+            <Route path="/owner/*" element={<SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>} />
+            <Route path="/admin/*" element={<SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        )}
+      </Routes>
       <ToastContainer />
     </>
   );

@@ -18,23 +18,21 @@ mockTurfs.forEach(t => {
 });
 
 export const AppProvider = ({ children }) => {
-  const [currentPanel, setCurrentPanel] = useState('login'); // 'login' | 'user' | 'owner' | 'admin'
+  const [currentPanel, setCurrentPanel] = useState('gateway'); // 'login' | 'user' | 'owner' | 'admin'
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [turfs, setTurfs] = useState(mockTurfs);
-  const [users, setUsers] = useState([...mockUsers, ...mockOwners]);
-  const [bookings, setBookings] = useState(mockBookings);
+  const [turfs, setTurfs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState(mockPayments);
-  const [slots, setSlots] = useState(allSlots);
+  const [slots, setSlots] = useState({});
   const [coupons, setCoupons] = useState(mockCoupons);
-  const [notifications, setNotifications] = useState(mockNotifications);
-  const [reviews, setReviews] = useState(mockReviews);
+  const [notifications, setNotifications] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [userLocation, setUserLocation] = useState('Kilpauk, Chennai');
   const [notificationEmail, setNotificationEmail] = useState('admin@turfx.com');
   const [toasts, setToasts] = useState([]);
   const [activityLogs, setActivityLogs] = useState([
-    { id: 'LOG-8821', user: 'Admin (Rohan)', action: 'System Credentials Updated', category: 'security', time: '2 mins ago', status: 'success', details: 'Changed primary admin password and updated 2-step verification hash.' },
-    { id: 'LOG-8819', user: 'Platform Engine', action: 'Fraud Alert Triggered', category: 'security', time: '12 mins ago', status: 'warning', details: 'User ID 9928 flagged for massive cancellation rate (>85%).' },
     { id: 'LOG-8815', user: 'Admin (Rohan)', action: 'Approved Turf: "Sky Arena"', category: 'management', time: '45 mins ago', status: 'success', details: 'Manually verified documents and activated venue listing.' },
     { id: 'LOG-8802', user: 'Automated Bot', action: 'Premium Subscription Renewal', category: 'financial', time: '1 hour ago', status: 'success', details: 'Successfully processed 12 recurring payments for Tier 1 users.' },
     { id: 'LOG-8798', user: 'Admin (Rohan)', action: 'User Banned: Sneha P.', category: 'user', time: '3 hours ago', status: 'danger', details: 'Indefinite suspension issued due to repeated payment disputes.' },
@@ -128,6 +126,11 @@ export const AppProvider = ({ children }) => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+  const addToast = useCallback((type, title, message) => {
+    const id = Date.now().toString();
+    setToasts(p => [...p, { id, type, title, message }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
   }, []);
   const removeToast = useCallback((id) => setToasts(p => p.filter(t => t.id !== id)), []);
 
