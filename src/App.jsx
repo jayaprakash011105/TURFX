@@ -142,32 +142,37 @@ function Gateway() {
 
 function DeploymentPort() {
   const { initialized } = useApp();
-  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase().trim(); // 'user' | 'owner' | 'admin' | ''
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase().trim();
 
-  // SMART ROUTING: If no env var, check the URL Hostname (Autonomous Selection)
-  if (!deployTarget && typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host.includes('admin')) deployTarget = 'admin';
-    else if (host.includes('owner')) deployTarget = 'owner';
-    else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
-  }
+  // HEURISTIC: Strict Hostname Divert (Highest Priority)
+  if (host.includes('admin')) deployTarget = 'admin';
+  else if (host.includes('owner')) deployTarget = 'owner';
+  else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
 
-  console.log('[TURFX] Final Handshake Deployment Target:', `"${deployTarget}"`);
+  console.log('[TURFX] IRONCLAD_ROUTING_KEY:', `"${deployTarget}"`, 'HOST:', host);
 
   if (!initialized) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
          <div className="status-dot online" style={{ width: 12, height: 12, boxShadow: '0 0 20px var(--accent-green)' }} />
-         <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>INITIATING_TURFX_PROTOCOLS...</div>
+         <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>SYNCHRONIZING_CORE_RESOURCES...</div>
       </div>
     );
   }
 
-  // PORTAL SELECTION BASED ON HEURISTIC
-  if (deployTarget === 'admin') return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
-  if (deployTarget === 'owner') return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
-  if (deployTarget === 'user' || deployTarget === 'player') return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
+  // PORTAL DIVERTER
+  if (deployTarget.includes('admin')) {
+    return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
+  }
+  if (deployTarget.includes('owner')) {
+    return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
+  }
+  if (deployTarget.includes('user') || deployTarget.includes('player')) {
+    return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
+  }
   
+  // Localhost / Development Gateway Fallback
   return <Gateway />;
 }
 
