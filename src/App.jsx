@@ -141,6 +141,7 @@ function Gateway() {
 
 
 function DeploymentPort() {
+  const { initialized } = useApp();
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase().trim();
 
@@ -150,6 +151,15 @@ function DeploymentPort() {
   else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
 
   console.log('[TURFX] IRONCLAD_ROUTING_KEY:', `"${deployTarget}"`, 'HOST:', host);
+
+  if (!initialized) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+         <div className="status-dot online" style={{ width: 12, height: 12, boxShadow: '0 0 20px var(--accent-green)' }} />
+         <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>SYNCHRONIZING_CORE_RESOURCES...</div>
+      </div>
+    );
+  }
 
   // PORTAL DIVERTER
   if (deployTarget.includes('admin')) {
@@ -165,14 +175,6 @@ function DeploymentPort() {
   // Localhost / Development Gateway Fallback
   return <Gateway />;
 }
-
-// Global Loader component
-const GlobalLoader = () => (
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
-     <div className="status-dot online" style={{ width: 12, height: 12, boxShadow: '0 0 20px var(--accent-green)' }} />
-     <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>SYNCHRONIZING_CORE_RESOURCES...</div>
-  </div>
-);
 
 function SubSystemAuth({ role, children }) {
   const { currentUser, session, signOut } = useApp();
@@ -206,11 +208,8 @@ function SubSystemAuth({ role, children }) {
 
 // User Panel
 function UserApp() {
-  const { initialized } = useApp();
   const [page, setPage] = useState('home');
   const [selectedTurf, setSelectedTurf] = useState(null);
-
-  if (!initialized) return <GlobalLoader />;
 
   const renderPage = () => {
     switch (page) {
@@ -234,10 +233,7 @@ function UserApp() {
 
 // Owner Panel
 function OwnerApp() {
-  const { initialized } = useApp();
   const [page, setPage] = useState('dashboard');
-
-  if (!initialized) return <GlobalLoader />;
 
   const renderPage = () => {
     switch (page) {
@@ -265,10 +261,7 @@ function OwnerApp() {
 
 // Admin Panel
 function AdminApp() {
-  const { initialized } = useApp();
   const [page, setPage] = useState('dashboard');
-
-  if (!initialized) return <GlobalLoader />;
 
   const renderPage = () => {
     switch (page) {
