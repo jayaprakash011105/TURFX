@@ -100,7 +100,7 @@ function Gateway() {
           <div style={{ width: 60, height: 60, borderRadius: 18, background: 'linear-gradient(135deg, var(--accent-green), #00a854)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: '#000', boxShadow: '0 0 40px rgba(0,230,118,0.4)' }}>T</div>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontFamily: 'Space Grotesk', fontWeight: 900, fontSize: 36, letterSpacing: -1, lineHeight: 1 }}>TURF<span style={{ color: 'var(--accent-green)' }}>X</span></div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 2 }}>SUPERSYSTEM LOCALHOST</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 2 }}>TURF-X HUB [PRODUCTION]</div>
           </div>
         </div>
         <p style={{ color: 'var(--text-secondary)', fontSize: 16, maxWidth: 500 }}>Select a subsystem below. Each operates on a dedicated sub-link while sharing the unified platform backend.</p>
@@ -142,7 +142,7 @@ function Gateway() {
 
 function DeploymentPort() {
   const { initialized } = useApp();
-  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase(); // 'user' | 'owner' | 'admin' | ''
+  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase().trim(); // 'user' | 'owner' | 'admin' | ''
 
   // SMART ROUTING: If no env var, check the URL Hostname (Autonomous Selection)
   if (!deployTarget && typeof window !== 'undefined') {
@@ -152,7 +152,7 @@ function DeploymentPort() {
     else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
   }
 
-  console.log('[TURFX] Autonomous Silhouette Detection:', deployTarget || 'Gateway-Dev');
+  console.log('[TURFX] Final Handshake Deployment Target:', `"${deployTarget}"`);
 
   if (!initialized) {
     return (
@@ -164,12 +164,11 @@ function DeploymentPort() {
   }
 
   // PORTAL SELECTION BASED ON HEURISTIC
-  switch (deployTarget) {
-    case 'admin': return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
-    case 'owner': return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
-    case 'user': case 'player': return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
-    default: return <Gateway />;
-  }
+  if (deployTarget === 'admin') return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
+  if (deployTarget === 'owner') return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
+  if (deployTarget === 'user' || deployTarget === 'player') return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
+  
+  return <Gateway />;
 }
 
 function SubSystemAuth({ role, children }) {
