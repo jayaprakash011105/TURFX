@@ -78,19 +78,25 @@ export default function AdminPricing() {
         </button>
       </div>
 
-      <div className="grid grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, marginBottom: 32 }}>
+      {/* Rules Grid - Balanced 2-Column Matrix */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
+        gap: 24, 
+        marginBottom: 32 
+      }}>
         {/* SURGE RULES */}
-        <div className="card" style={{ padding: 24 }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24 }}>
           <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--accent-orange)' }}>
             <TrendingUp size={22} strokeWidth={2.5} /> Yield Boosters
           </h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Weekend Surge */}
-            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.weekendSurge.active ? '1px solid var(--accent-orange)' : '1px solid var(--border)' }}>
+            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.weekendSurge.active ? '1px solid var(--accent-orange)' : '1px solid var(--border)', transition: 'var(--transition)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>Weekend Scale</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>Weekend Scale</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Fri-Sun high density scaling</div>
                 </div>
                 <label className="toggle-switch">
@@ -99,23 +105,22 @@ export default function AdminPricing() {
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)' }}>MULTIPLIER</div>
                 <input 
                   type="number" step="0.05" min="1.0" max="2.0"
                   value={rules.weekendSurge.multiplier} 
                   onChange={e => updateMultiplier('weekendSurge', e.target.value)}
                   disabled={!rules.weekendSurge.active}
-                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14 }} 
+                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14, borderRadius: 10 }} 
                 />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-orange)' }}>+{Math.round((rules.weekendSurge.multiplier - 1) * 100)}% BOOST</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-orange)' }}>+{Math.round((rules.weekendSurge.multiplier - 1) * 100)}% BOOST</span>
               </div>
             </div>
 
             {/* Peak Hour Surge */}
-            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.peakHourSurge.active ? '1px solid var(--accent-orange)' : '1px solid var(--border)' }}>
+            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.peakHourSurge.active ? '1px solid var(--accent-orange)' : '1px solid var(--border)', transition: 'var(--transition)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>Prime Time (18:00-22:00)</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>Prime Time (18:00-22:00)</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Active window surge modifier</div>
                 </div>
                 <label className="toggle-switch">
@@ -124,32 +129,31 @@ export default function AdminPricing() {
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)' }}>MULTIPLIER</div>
                 <input 
                   type="number" step="0.05" min="1.0" max="2.0"
                   value={rules.peakHourSurge.multiplier} 
                   onChange={e => updateMultiplier('peakHourSurge', e.target.value)}
                   disabled={!rules.peakHourSurge.active}
-                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14 }} 
+                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14, borderRadius: 10 }} 
                 />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-orange)' }}>+{Math.round((rules.peakHourSurge.multiplier - 1) * 100)}% BOOST</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-orange)' }}>+{Math.round((rules.peakHourSurge.multiplier - 1) * 100)}% BOOST</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* DISCOUNT RULES */}
-        <div className="card" style={{ padding: 24 }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24 }}>
           <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--accent-blue)' }}>
             <Percent size={22} strokeWidth={2.5} /> Efficiency Modifiers
           </h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Weather Discount */}
-            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.weatherDiscount.active ? '1px solid var(--accent-blue)' : '1px solid var(--border)' }}>
+            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.weatherDiscount.active ? '1px solid var(--accent-blue)' : '1px solid var(--border)', transition: 'var(--transition)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>Climate Shield</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>Climate Shield</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Inclement weather occupancy guard</div>
                 </div>
                 <label className="toggle-switch">
@@ -158,23 +162,22 @@ export default function AdminPricing() {
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)' }}>MULTIPLIER</div>
                 <input 
                   type="number" step="0.05" min="0.5" max="1.0"
                   value={rules.weatherDiscount.multiplier} 
                   onChange={e => updateMultiplier('weatherDiscount', e.target.value)}
                   disabled={!rules.weatherDiscount.active}
-                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14 }} 
+                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14, borderRadius: 10 }} 
                 />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-blue)' }}>-{Math.round((1 - rules.weatherDiscount.multiplier) * 100)}% OFF-LOAD</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-blue)' }}>-{Math.round((1 - rules.weatherDiscount.multiplier) * 100)}% OFF-LOAD</span>
               </div>
             </div>
 
             {/* Low Occupancy Drop */}
-            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.lowOccupancyDrop.active ? '1px solid var(--accent-blue)' : '1px solid var(--border)' }}>
+            <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 16, border: rules.lowOccupancyDrop.active ? '1px solid var(--accent-blue)' : '1px solid var(--border)', transition: 'var(--transition)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>Dead-Hour Fillers</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>Dead-Hour Fillers</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>10:00 - 14:00 demand incentive</div>
                 </div>
                 <label className="toggle-switch">
@@ -183,15 +186,14 @@ export default function AdminPricing() {
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)' }}>MULTIPLIER</div>
                 <input 
                   type="number" step="0.05" min="0.5" max="1.0"
                   value={rules.lowOccupancyDrop.multiplier} 
                   onChange={e => updateMultiplier('lowOccupancyDrop', e.target.value)}
                   disabled={!rules.lowOccupancyDrop.active}
-                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14 }} 
+                  className="form-input" style={{ width: 80, padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 14, borderRadius: 10 }} 
                 />
-                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-blue)' }}>-{Math.round((1 - rules.lowOccupancyDrop.multiplier) * 100)}% OFF-LOAD</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-blue)' }}>-{Math.round((1 - rules.lowOccupancyDrop.multiplier) * 100)}% OFF-LOAD</span>
               </div>
             </div>
           </div>

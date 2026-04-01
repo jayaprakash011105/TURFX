@@ -113,7 +113,32 @@ export const AppProvider = ({ children }) => {
     
     fetchData();
 
-    // 4. Auth Listener
+    // 4. SUPABASE REAL-TIME CHANNEL (The Global Pulse)
+    const channel = supabase.channel('platform-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turfs' }, payload => {
+        if (payload.eventType === 'INSERT') setTurfs(p => [...p, payload.new]);
+        if (payload.eventType === 'UPDATE') setTurfs(p => p.map(t => t.id === payload.new.id ? payload.new : t));
+        if (payload.eventType === 'DELETE') setTurfs(p => p.filter(t => t.id !== payload.old.id));
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, payload => {
+        if (payload.eventType === 'INSERT') setBookings(p => [payload.new, ...p]);
+        if (payload.eventType === 'UPDATE') setBookings(p => p.map(b => b.id === payload.new.id ? payload.new : b));
+        if (payload.eventType === 'DELETE') setBookings(p => p.filter(b => b.id !== payload.old.id));
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'slots' }, payload => {
+        if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+          const slot = payload.new;
+          setSlots(p => ({
+            ...p,
+            [slot.turf_id]: (p[slot.turf_id] || []).some(s => s.id === slot.id)
+              ? p[slot.turf_id].map(s => s.id === slot.id ? slot : s)
+              : [...(p[slot.turf_id] || []), slot]
+          }));
+        }
+      })
+      .subscribe();
+
+    // 5. Auth Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
@@ -125,7 +150,10 @@ export const AppProvider = ({ children }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(channel);
+    };
   }, []);
   const addToast = useCallback((type, title, message) => {
     const id = Date.now().toString();

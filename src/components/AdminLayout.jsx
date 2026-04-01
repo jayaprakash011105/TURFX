@@ -111,10 +111,10 @@ export default function AdminLayout({ children, activePage, setActivePage }) {
 
                {profileOpen && (
                  <div className="animate-fade" style={{ position: 'absolute', top: 70, right: 20, width: 220, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px', zIndex: 100, boxShadow: 'var(--shadow-lg)' }}>
-                    <div style={{ padding: '12px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
-                       <div style={{ fontSize: 13, fontWeight: 800 }}>{currentUser?.name}</div>
-                       <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{currentUser?.email}</div>
-                    </div>
+                     <div style={{ padding: '12px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
+                       <div style={{ fontSize: 13, fontWeight: 800 }}>{currentUser?.name || 'Super Admin'}</div>
+                       <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{currentUser?.email || 'admin@turfx.com'}</div>
+                     </div>
                     <button onClick={() => { setProfileOpen(false); setActivePage('activity'); }} style={{ width: '100%', padding: '10px', background: 'transparent', border: 'none', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                        <Activity size={14} /> System Logs
                     </button>
@@ -126,8 +126,10 @@ export default function AdminLayout({ children, activePage, setActivePage }) {
             </div>
           </header>
 
-          <main style={{ flex: 1, overflowY: 'auto', padding: '20px 0' }}>
-            {children}
+          <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+            <div className="container" style={{ maxWidth: 1200, margin: '0 auto' }}>
+              {children}
+            </div>
           </main>
         </div>
       </div>

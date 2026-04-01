@@ -30,39 +30,64 @@ export default function AdminUserManagement({ roleType }) {
 
   return (
     <div className="animate-fade">
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{title}</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{targetUsers.length} total {roleType === 'owner' ? 'owners' : 'players'} registered</p>
+      <div style={{ marginBottom: 40 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 950, marginBottom: 12, letterSpacing: '-0.03em', background: 'linear-gradient(to right, #fff, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{title}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 }}>{targetUsers.length} total platform entities registered</p>
+          <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--border)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="status-dot online" style={{ width: 6, height: 6 }} />
+            <span style={{ color: 'var(--accent-green)', fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>REALTIME_SYNC: ACTIVE</span>
+          </div>
+        </div>
       </div>
 
       {/* Dynamic Stats Cards depending on role */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>TOTAL {roleType === 'owner' ? 'OWNERS' : 'PLAYERS'}</div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: roleType==='owner' ? 'var(--accent-blue)' : 'var(--accent-green)' }}>
+      {/* Dynamic Stats Cards in Grid */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: `repeat(${roleType === 'owner' ? 3 : 4}, 1fr)`, 
+        gap: 16, 
+        marginBottom: 24 
+      }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>TOTAL {roleType === 'owner' ? 'OWNERS' : 'PLAYERS'}</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: roleType==='owner' ? 'var(--accent-blue)' : 'var(--accent-green)' }}>
             {targetUsers.length}
+          </div>
+          <div style={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.05, transform: 'rotate(-10deg)' }}>
+            {roleType === 'owner' ? <Building2 size={80} /> : <User size={80} />}
           </div>
         </div>
         
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>ACTIVE ACCOUNTS</div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-primary)' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>ACTIVE ACCOUNTS</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-primary)' }}>
             {targetUsers.filter(u => u.status === 'active').length}
+          </div>
+          <div style={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.05, transform: 'rotate(-10deg)' }}>
+            <UserCheck size={80} />
           </div>
         </div>
 
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>SUSPENDED</div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--accent-red)' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>SUSPENDED</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--accent-red)' }}>
             {targetUsers.filter(u => u.status === 'suspended').length}
+          </div>
+          <div style={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.05, transform: 'rotate(-10deg)' }}>
+            <UserX size={80} />
           </div>
         </div>
 
         {roleType !== 'owner' && (
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>PREMIUM PLANS</div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--accent-purple)' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>PREMIUM PLANS</div>
+            <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--accent-purple)' }}>
               {targetUsers.filter(u => u.subscription === 'premium').length}
+            </div>
+            <div style={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.05, transform: 'rotate(-10deg)' }}>
+              <Shield size={80} />
             </div>
           </div>
         )}

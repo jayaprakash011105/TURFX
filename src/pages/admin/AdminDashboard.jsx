@@ -56,9 +56,15 @@ export default function AdminDashboard({ setActivePage }) {
       </div>
 
       {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, marginBottom: 32 }}>
+      {/* Charts Row - Professional 2-Column Grid */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 
+        gap: 24, 
+        marginBottom: 32 
+      }}>
         {/* Revenue Trend */}
-        <div className="card" style={{ padding: '24px' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 900 }}>Yield Velocity</h3>
@@ -73,39 +79,41 @@ export default function AdminDashboard({ setActivePage }) {
                 <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={11} axisLine={false} tickLine={false} dy={10} />
                 <YAxis stroke="var(--text-muted)" fontSize={11} axisLine={false} tickLine={false} tickFormatter={v => `₹${v/1000}k`} />
                 <Tooltip content={<CustomTT />} cursor={{ stroke: 'var(--accent-green)', strokeWidth: 1 }} />
-                <Line type="monotone" dataKey="amount" stroke="var(--accent-green)" strokeWidth={4} dot={{ fill: 'var(--accent-green)', r: 6, strokeWidth: 0 }} activeDot={{ r: 8, boxShadow: '0 0 20px var(--accent-green)' }} />
+                <Line type="monotone" dataKey="amount" stroke="var(--accent-green)" strokeWidth={4} dot={{ fill: 'var(--accent-green)', r: 6, strokeWidth: 0 }} activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Sport Distribution */}
-        <div className="card" style={{ padding: '24px' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '24px' }}>
           <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 24 }}>Category Reach</h3>
-          <div style={{ width: '100%', height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={analyticsData.sportDistribution} dataKey="value" nameKey="sport" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} stroke="none">
-                  {analyticsData.sportDistribution.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
-            {analyticsData.sportDistribution.map((s, i) => (
-              <div key={s.sport} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>
-                <div style={{ width: 10, height: 10, borderRadius: 3, background: PIE_COLORS[i] }} />
-                {s.sport}
-              </div>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', height: 260 }}>
+            <div style={{ flex: 1, height: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={analyticsData.sportDistribution} dataKey="value" nameKey="sport" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={4} stroke="none">
+                    {analyticsData.sportDistribution.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ width: 140, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {analyticsData.sportDistribution.map((s, i) => (
+                <div key={s.sport} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: PIE_COLORS[i] }} />
+                  {s.sport}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, marginBottom: 32 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: 24, marginBottom: 32 }}>
         {/* Activity Patterns */}
-        <div className="card" style={{ padding: '24px' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 900 }}>Operational Density</h3>
@@ -132,24 +140,25 @@ export default function AdminDashboard({ setActivePage }) {
         </div>
 
         {/* Approvals Alert Queue */}
-        <div className="card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, alignItems: 'center' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 900 }}>Validation Queue</h3>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+            <h3 style={{ fontSize: 18, fontWeight: 900 }}>Validation Queue</h3>
             <div className="badge badge-yellow" style={{ fontSize: 10, fontWeight: 900 }}>{pendingTurfs.length} ACTION REQUIRED</div>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 260, overflowY: 'auto', paddingRight: 8 }}>
             {pendingTurfs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
                  <div style={{ fontSize: 32, marginBottom: 12 }}>🛡️</div>
-                 <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)' }}>Security audit complete.</div>
+                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)' }}>Security audit complete.</div>
+                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>No venues currently awaiting induction.</div>
               </div>
-            ) : pendingTurfs.slice(0, 4).map(t => (
-              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', background: 'var(--bg-secondary)', borderRadius: 16, border: '1px solid var(--border)' }}>
+            ) : pendingTurfs.map(t => (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px', background: 'var(--bg-secondary)', borderRadius: 16, border: '1px solid var(--border)' }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(234,179,8,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>📋</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>By {t.ownerName} · {t.location}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>By {t.owners?.name || t.ownerName || 'Unknown'} · {t.location}</div>
                 </div>
                 <button className="btn btn-ghost btn-xs" style={{ color: 'var(--accent-yellow)', fontSize: 10, border: '1px solid rgba(234,179,8,0.2)' }} onClick={() => setActivePage('turfs')}>PROCESS</button>
               </div>
