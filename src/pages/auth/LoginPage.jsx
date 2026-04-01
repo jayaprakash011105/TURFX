@@ -15,28 +15,9 @@ export default function LoginPage({ overrideRole }) {
     { id: 'admin', label: 'Admin', icon: Shield, color: '#8b5cf6', desc: 'Platform control' },
   ];
 
-  const { signIn, signUp, addToast } = useApp();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-       if (mode === 'login') {
-         await signIn(form.email, form.password);
-         addToast('success', 'Tactical Link Established', `Welcome back to the grid.`);
-       } else {
-         await signUp(form.email, form.password, { name: form.name, phone: form.phone, role });
-         addToast('success', 'Commission Initiated', 'Your operative profile has been created.');
-       }
-    } catch (err) {
-       setError(err.message || 'Authentication sequence failed.');
-       addToast('error', 'Auth Breach', err.message);
-    } finally {
-       setLoading(false);
-    }
+    login(role);
   };
 
   const activeRole = roles.find(r => r.id === role);
@@ -151,10 +132,8 @@ export default function LoginPage({ overrideRole }) {
               </div>
             </div>
 
-            {error && <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--accent-red)', borderRadius: 8, color: 'var(--accent-red)', fontSize: 12, fontWeight: 700 }}>{error.toUpperCase()}</div>}
-
-            <button type="submit" disabled={loading} className="btn btn-primary btn-lg btn-full" style={{ background: activeRole.color, color: role === 'user' ? '#000' : '#fff', marginTop: 4 }}>
-              {loading ? 'PROCESSING...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+            <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ background: activeRole.color, color: role === 'user' ? '#000' : '#fff', marginTop: 4 }}>
+              {mode === 'login' ? 'Continue' : 'Create Account'}
             </button>
           </form>
 

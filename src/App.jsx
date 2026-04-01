@@ -100,7 +100,7 @@ function Gateway() {
           <div style={{ width: 60, height: 60, borderRadius: 18, background: 'linear-gradient(135deg, var(--accent-green), #00a854)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: '#000', boxShadow: '0 0 40px rgba(0,230,118,0.4)' }}>T</div>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontFamily: 'Space Grotesk', fontWeight: 900, fontSize: 36, letterSpacing: -1, lineHeight: 1 }}>TURF<span style={{ color: 'var(--accent-green)' }}>X</span></div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 2 }}>TURF-X HUB [PRODUCTION]</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 2 }}>SUPERSYSTEM LOCALHOST</div>
           </div>
         </div>
         <p style={{ color: 'var(--text-secondary)', fontSize: 16, maxWidth: 500 }}>Select a subsystem below. Each operates on a dedicated sub-link while sharing the unified platform backend.</p>
@@ -140,69 +140,12 @@ function Gateway() {
 }
 
 
-function DeploymentPort() {
-  const { initialized } = useApp();
-  const host = typeof window !== 'undefined' ? window.location.hostname : '';
-  let deployTarget = (import.meta.env.VITE_DEPLOY_TARGET || '').toLowerCase().trim();
-
-  // HEURISTIC: Strict Hostname Divert (Highest Priority)
-  if (host.includes('admin')) deployTarget = 'admin';
-  else if (host.includes('owner')) deployTarget = 'owner';
-  else if (host.includes('player') || host.includes('myturfx')) deployTarget = 'user';
-
-  console.log('[TURFX] IRONCLAD_ROUTING_KEY:', `"${deployTarget}"`, 'HOST:', host);
-
-  if (!initialized) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
-         <div className="status-dot online" style={{ width: 12, height: 12, boxShadow: '0 0 20px var(--accent-green)' }} />
-         <div style={{ marginLeft: 12, fontSize: 13, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>SYNCHRONIZING_CORE_RESOURCES...</div>
-      </div>
-    );
-  }
-
-  // PORTAL DIVERTER
-  if (deployTarget.includes('admin')) {
-    return <SubSystemAuth role="admin"><AdminApp /></SubSystemAuth>;
-  }
-  if (deployTarget.includes('owner')) {
-    return <SubSystemAuth role="owner"><OwnerApp /></SubSystemAuth>;
-  }
-  if (deployTarget.includes('user') || deployTarget.includes('player')) {
-    return <SubSystemAuth role="user"><UserApp /></SubSystemAuth>;
-  }
-  
-  // Localhost / Development Gateway Fallback
-  return <Gateway />;
-}
-
 function SubSystemAuth({ role, children }) {
-  const { currentUser, session, signOut } = useApp();
-  
-  // 1. Not Authenticated: Force Login for specific role
-  if (!session || !currentUser) {
+  const { currentPanel } = useApp();
+  // Automatically force the login view to match the requested role link if they're not logged into this role.
+  if (currentPanel !== role) {
     return <LoginPage overrideRole={role} />;
   }
-
-  // 2. Authenticated but WRONG ROLE: Access Denied
-  if (currentUser.role !== role) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', padding: 20 }}>
-        <div className="card animate-fade" style={{ maxWidth: 400, textAlign: 'center', padding: 40, border: '1px solid var(--accent-red)' }}>
-          <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(239,68,68,0.1)', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-            <Shield size={40} strokeWidth={2.5} />
-          </div>
-          <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Access Denied</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>Your operative profile (<b>{currentUser.role.toUpperCase()}</b>) is not authorized to access the <b>{role.toUpperCase()}</b> deployment center.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-             <button className="btn btn-primary" style={{ height: 50, fontWeight: 800 }} onClick={() => window.location.href = '/'}>RETURN_TO_BASE</button>
-             <button className="btn btn-ghost" style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-red)' }} onClick={signOut}>TERMINATE_SESSION</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return children;
 }
 
@@ -297,9 +240,9 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<DeploymentPort />} />
+        <Route path="/" element={<Gateway />} />
         
-        {/* Shared Subsystem Routes (Local Gateway & Deep Links) */}
+        {/* User App Subsystem */}
         <Route path="/app/*" element={
           <SubSystemAuth role="user">
             <UserApp />
