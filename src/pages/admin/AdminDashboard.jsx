@@ -47,8 +47,13 @@ export default function AdminDashboard({ setActivePage }) {
         </div>
       </div>
 
-      {/* KPIs Grid */}
-      <div className="grid grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginBottom: 32 }}>
+      {/* KPIs Grid - Flagship Row */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gap: 16, 
+        marginBottom: 32 
+      }}>
         <KPICard label="Scale Efficiency" value={adminStats.totalUsers} icon={<Users size={22} strokeWidth={2.5} />} color="var(--accent-green)" trend="+12.4%" sub="Total platform athletes" />
         <KPICard label="Asset Density" value={adminStats.activeTurfs} icon={<Building2 size={22} strokeWidth={2.5} />} color="var(--accent-blue)" sub={`${adminStats.pendingTurfs} pending review`} />
         <KPICard label="Transaction Flow" value={`₹${adminStats.totalRevenue.toLocaleString()}`} icon={<DollarSign size={22} strokeWidth={2.5} />} color="var(--accent-yellow)" trend="+18.2%" sub="Gross platform yield" />
