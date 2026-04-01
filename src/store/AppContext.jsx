@@ -4,6 +4,7 @@ import {
   mockPayments, mockCoupons, mockNotifications, mockReviews,
   generateSlots
 } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 
 const AppContext = createContext(null);
 
@@ -89,11 +90,44 @@ export const AppProvider = ({ children }) => {
     return Math.round(basePrice * multiplier);
   }, [pricingRules]);
 
-  // Toast system
-  const addToast = useCallback((type, title, message) => {
-    const id = Date.now().toString();
-    setToasts(p => [...p, { id, type, title, message }]);
-    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4000);
+  // SUPABASE REAL-TIME RECOVERY ENGINE
+  useEffect(() => {
+    const fetchData = async () => {
+      // 1. Fetch Turfs
+      const { data: tData } = await supabase.from('turfs').select('*');
+      if (tData) setTurfs(tData);
+
+      // 2. Fetch Bookings
+      const { data: bData } = await supabase.from('bookings').select('*');
+      if (bData) setBookings(bData);
+
+      // 3. Fetch Slots (Next 7 days)
+      const { data: sData } = await supabase.from('slots').select('*');
+      if (sData) {
+        const grouped = {};
+        sData.forEach(s => {
+          if (!grouped[s.turf_id]) grouped[s.turf_id] = [];
+          grouped[s.turf_id].push(s);
+        });
+        setSlots(p => ({ ...p, ...grouped }));
+      }
+    };
+    
+    fetchData();
+
+    // 4. Auth Listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        setCurrentUser(profile || { id: session.user.id, email: session.user.email });
+        if (profile) setCurrentPanel(profile.role);
+      } else {
+        setCurrentUser(null);
+        setCurrentPanel('login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
   const removeToast = useCallback((id) => setToasts(p => p.filter(t => t.id !== id)), []);
 
@@ -141,18 +175,30 @@ export const AppProvider = ({ children }) => {
   };
 
   // TURF CRUD
-  const addTurf = (turf) => {
-    const newTurf = { ...turf, id: `t${Date.now()}`, status: 'pending', createdAt: new Date().toISOString().split('T')[0], rating: 0, reviewCount: 0, images: [] };
-    setTurfs(p => [...p, newTurf]);
-    setSlots(p => ({ ...p, [newTurf.id]: generateSlots(newTurf.id, newTurf.courts) }));
-    addActivity(`New Turf Applied: "${newTurf.name}"`, 'management', `Venue located in ${newTurf.location} is awaiting admin approval.`, currentUser?.name || 'Owner', 'warning');
-    addNotification('alert', 'New Turf Listing', `Venue "${newTurf.name}" has been submitted for approval by ${currentUser?.name || 'Owner'}.`);
-    addToast('success', 'Turf Added', 'Your turf has been submitted for approval');
-    return newTurf;
+  const addTurf = async (turf) => {
+    const newTurf = { 
+      ...turf, 
+      id: undefined, // Let Supabase gen UUID
+      owner_id: currentUser?.id, 
+      owner_name: currentUser?.name || 'Owner',
+      status: 'pending', 
+      created_at: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase.from('turfs').insert(newTurf).select().single();
+    if (data) {
+      setTurfs(p => [...p, data]);
+      addToast('success', 'Asset Registration Initiated', 'Your venue is now awaiting admin validation.');
+      return data;
+    }
   };
-  const updateTurf = (id, updates) => {
-    setTurfs(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
-    addToast('success', 'Turf Updated', 'Changes saved successfully');
+
+  const updateTurf = async (id, updates) => {
+    const { error } = await supabase.from('turfs').update(updates).eq('id', id);
+    if (!error) {
+      setTurfs(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
+      addToast('success', 'Database Synchronized', 'Changes have been committed to the live venue profile.');
+    }
   };
   const deleteTurf = (id) => {
     setTurfs(p => p.filter(t => t.id !== id));
@@ -174,11 +220,14 @@ export const AppProvider = ({ children }) => {
   };
 
   // SLOT MANAGEMENT
-  const updateSlot = (turfId, slotId, updates) => {
-    setSlots(p => ({
-      ...p,
-      [turfId]: (p[turfId] || []).map(s => s.id === slotId ? { ...s, ...updates } : s)
-    }));
+  const updateSlot = async (turfId, slotId, updates) => {
+    const { error } = await supabase.from('slots').update(updates).eq('id', slotId);
+    if (!error) {
+      setSlots(p => ({
+        ...p,
+        [turfId]: (p[turfId] || []).map(s => s.id === slotId ? { ...s, ...updates } : s)
+      }));
+    }
   };
   const blockSlot = (turfId, slotId) => {
     updateSlot(turfId, slotId, { status: 'blocked' });
@@ -190,27 +239,32 @@ export const AppProvider = ({ children }) => {
   };
 
   // BOOKING
-  const createBooking = (bookingData) => {
+  const createBooking = async (bookingData) => {
+    const txId = `TXN${Date.now()}`;
     const newBooking = {
-      id: `b${Date.now()}`,
-      userId: currentUser?.id,
-      ...bookingData,
+      user_id: currentUser?.id,
+      turf_id: bookingData.turfId,
+      slot_id: bookingData.slotId,
+      turf_name: bookingData.turfName,
+      date: bookingData.date,
+      start_time: bookingData.startTime,
+      end_time: bookingData.endTime,
+      amount: bookingData.amount,
       status: 'confirmed',
-      paymentStatus: 'paid',
-      transactionId: `TXN${Date.now()}`,
-      createdAt: new Date().toISOString().split('T')[0],
-      rating: null,
+      payment_status: 'paid',
+      transaction_id: txId,
+      payment_method: bookingData.paymentMethod || 'GPay',
+      created_at: new Date().toISOString()
     };
-    setBookings(p => [newBooking, ...p]);
-    const turf = turfs.find(t => t.id === bookingData.turfId);
-    // Mark slot as booked
-    updateSlot(bookingData.turfId, bookingData.slotId, { status: 'booked', bookedBy: currentUser?.id });
-    // Add payment
-    setPayments(p => [...p, { id: `p${Date.now()}`, bookingId: newBooking.id, userId: currentUser?.id, turfId: bookingData.turfId, amount: bookingData.amount, status: 'success', method: bookingData.paymentMethod || 'GPay', transactionId: newBooking.transactionId, createdAt: newBooking.createdAt }]);
-    addActivity(`New Booking: "${turf?.name}"`, 'financial', `User ${currentUser?.name || bookingData.userId} booked a slot for ₹${bookingData.amount}.`, currentUser?.name || 'User', 'success');
-    addNotification('booking', 'Confirmed Booking', `A new booking has been confirmed for ${turf?.name} at ₹${bookingData.amount}.`);
-    addToast('success', 'Booking Confirmed!', `Your slot is booked. Transaction ID: ${newBooking.transactionId}`);
-    return newBooking;
+
+    const { data, error } = await supabase.from('bookings').insert(newBooking).select().single();
+    if (data) {
+      setBookings(p => [data, ...p]);
+      // Mark slot as booked in DB
+      await updateSlot(bookingData.turfId, bookingData.slotId, { status: 'booked', booked_by: currentUser?.id });
+      addToast('success', 'Reservation Established!', `Booking ID ${txId} successfully committed to the ledger.`);
+      return data;
+    }
   };
   const cancelBooking = (bookingId) => {
     const booking = bookings.find(b => b.id === bookingId);

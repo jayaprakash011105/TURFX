@@ -237,8 +237,31 @@ function AdminApp() {
 
 // Root
 export default function App() {
-  return (
-    <>
+  const url = window.location.href.toLowerCase();
+
+  let AppContent;
+
+  if (url.includes('admin')) {
+    AppContent = (
+      <SubSystemAuth role="admin">
+        <AdminApp />
+      </SubSystemAuth>
+    );
+  } else if (url.includes('owner')) {
+    AppContent = (
+      <SubSystemAuth role="owner">
+        <OwnerApp />
+      </SubSystemAuth>
+    );
+  } else if (url.includes('player') || url.includes('myturfx')) {
+    AppContent = (
+      <SubSystemAuth role="user">
+        <UserApp />
+      </SubSystemAuth>
+    );
+  } else {
+    // Fallback block for local gateway
+    AppContent = (
       <Routes>
         <Route path="/" element={<Gateway />} />
         
@@ -266,6 +289,12 @@ export default function App() {
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    );
+  }
+
+  return (
+    <>
+      {AppContent}
       <ToastContainer />
     </>
   );
