@@ -11,6 +11,8 @@ const AppContext = createContext(null);
 const LOGGED_IN_USER = { id: 'u1', name: 'Arjun Mehta', email: 'arjun@example.com', phone: '+91 98765 43210', role: 'user', subscription: 'premium', avatar: '👤' };
 const LOGGED_IN_OWNER = { id: 'o1', name: 'Vikram Shetty', email: 'vikram@turfpro.com', phone: '+91 90000 11111', role: 'owner', avatar: '🏢' };
 const LOGGED_IN_ADMIN = { id: 'admin1', name: 'Super Admin', email: 'admin@turfx.com', phone: '+91 00000 00000', role: 'admin', avatar: '👑' };
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 const allSlots = {};
 mockTurfs.forEach(t => {
