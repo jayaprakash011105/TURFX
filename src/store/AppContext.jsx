@@ -35,14 +35,6 @@ export const AppProvider = ({ children }) => {
 
   // INITIAL HYDRATION & RECOVERY
   useEffect(() => {
-    // 0. Emergency Bypass (Prevent infinite loading if Supabase is slow)
-    const timeout = setTimeout(() => {
-      setInitialized(prev => {
-        if (!prev) console.warn('[TURFX] Initialization timed out. Operations continuing in Offline/Demo mode.');
-        return true;
-      });
-    }, 7000);
-
     // 1. Initial State Recovery (Mock state for now)
     const saved = localStorage.getItem('turfx_state');
     if (saved) {
@@ -57,13 +49,9 @@ export const AppProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        fetchProfile(session.user.id).finally(() => {
-          setInitialized(true);
-          clearTimeout(timeout);
-        });
+        fetchProfile(session.user.id).finally(() => setInitialized(true));
       } else {
         setInitialized(true);
-        clearTimeout(timeout);
       }
     });
 
@@ -73,10 +61,7 @@ export const AppProvider = ({ children }) => {
       else { setCurrentUser(null); setCurrentPanel('login'); }
     });
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   // 3. PERSISTENCE ENGINE
