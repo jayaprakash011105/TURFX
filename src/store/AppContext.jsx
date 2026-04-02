@@ -511,6 +511,7 @@ export const AppProvider = ({ children }) => {
       activityLogs, setActivityLogs, addActivity,
       adminStats, ownerStats, ownerTurfs, ownerBookings, userBookings,
       pricingRules, setPricingRules, calculateEffectivePrice,
+      loginWithSupabase, register,
     }}>
       {children}
     </AppContext.Provider>
