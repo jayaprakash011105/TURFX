@@ -112,10 +112,10 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       const { data: tData } = await supabase.from('turfs').select('*');
-      if (tData) setTurfs(tData);
+      if (tData && tData.length > 0) setTurfs(tData);
 
       const { data: bData } = await supabase.from('bookings').select('*');
-      if (bData) setBookings(bData);
+      if (bData && bData.length > 0) setBookings(bData);
 
       const { data: sData } = await supabase.from('slots').select('*');
       if (sData) {
