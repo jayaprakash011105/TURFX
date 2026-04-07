@@ -155,10 +155,19 @@ export const AppProvider = ({ children }) => {
       .subscribe();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[Auth] State Event:', event);
       if (session) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        setCurrentUser(profile || { id: session.user.id, email: session.user.email });
-        if (profile) setCurrentPanel(profile.role);
+        const userRole = profile?.role || session.user.user_metadata?.role || 'user';
+        
+        setCurrentUser(profile || { 
+          id: session.user.id, 
+          email: session.user.email, 
+          role: userRole,
+          name: session.user.user_metadata?.full_name || 'Member'
+        });
+        
+        setCurrentPanel(userRole);
       } else {
         setCurrentUser(null);
         setCurrentPanel('login');
