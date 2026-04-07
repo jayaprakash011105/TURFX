@@ -23,11 +23,11 @@ export const AppProvider = ({ children }) => {
   const [currentPanel, setCurrentPanel] = useState('gateway'); // 'login' | 'user' | 'owner' | 'admin'
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [turfs, setTurfs] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [bookings, setBookings] = useState([]);
+  const [turfs, setTurfs] = useState(mockTurfs);
+  const [users, setUsers] = useState(mockUsers);
+  const [bookings, setBookings] = useState(mockBookings);
   const [payments, setPayments] = useState(mockPayments);
-  const [slots, setSlots] = useState({});
+  const [slots, setSlots] = useState(allSlots);
   const [coupons, setCoupons] = useState(mockCoupons);
   const [notifications, setNotifications] = useState([]);
   const [reviews, setReviews] = useState([]);
