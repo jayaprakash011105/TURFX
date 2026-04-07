@@ -253,7 +253,7 @@ export const AppProvider = ({ children }) => {
     return { error: { message: 'Unexpected registration state' } };
   };
 
-  const loginWithSupabase = async (email, password) => {
+  const loginWithSupabase = async (email, password, role) => {
     console.log('[Auth] Attempting login:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -261,7 +261,18 @@ export const AppProvider = ({ children }) => {
       addToast('error', 'Authentication Failed', error.message);
       return { error };
     }
-    console.log('[Auth] Login successful.');
+    console.log('[Auth] Login successful, resolving profile...');
+
+    // Immediately fetch + set user so the portal unlocks without waiting for listener
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+    const userRole = profile?.role || data.user.user_metadata?.role || role || 'user';
+    setCurrentUser(profile || {
+      id: data.user.id,
+      email: data.user.email,
+      role: userRole,
+      name: data.user.user_metadata?.full_name || 'Member'
+    });
+    setCurrentPanel(userRole);
     addToast('success', 'Identity Verified', 'Welcome back to the dashboard.');
     return { data };
   };

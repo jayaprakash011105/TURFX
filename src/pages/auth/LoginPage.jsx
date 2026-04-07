@@ -19,23 +19,14 @@ export default function LoginPage({ overrideRole }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log('[Login] Form submission started. Mode:', mode);
-    
     try {
       if (mode === 'login') {
-        const result = await loginWithSupabase(form.email, form.password);
-        if (result?.error) {
-          setLoading(false);
-        }
+        const result = await loginWithSupabase(form.email, form.password, role);
+        if (result?.error) setLoading(false);
       } else {
         const result = await register(form.email, form.password, form.name, form.phone, role);
-        if (result?.error) {
-          setLoading(false);
-        } else {
-          // Success, wait for redirect or flip to login
-          setLoading(false);
-          setMode('login');
-        }
+        if (result?.error) { setLoading(false); }
+        else { setLoading(false); setMode('login'); }
       }
     } catch (err) {
       console.error('[Login] Unexpected form error:', err);
