@@ -142,6 +142,12 @@ function Gateway() {
 
 function SubSystemAuth({ role, children }) {
   const { currentPanel } = useApp();
+  
+  // Public access loop-hole for the player portal
+  if (role === 'user') {
+    return children;
+  }
+
   // Automatically force the login view to match the requested role link if they're not logged into this role.
   if (currentPanel !== role) {
     return <LoginPage overrideRole={role} />;
