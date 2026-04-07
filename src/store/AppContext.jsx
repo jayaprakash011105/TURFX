@@ -254,26 +254,24 @@ export const AppProvider = ({ children }) => {
   };
 
   const loginWithSupabase = async (email, password, role) => {
-    console.log('[Auth] Attempting login:', email);
+    console.log('[Auth] Attempting login:', email, 'role:', role);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       console.error('[Auth] login Error:', error);
       addToast('error', 'Authentication Failed', error.message);
       return { error };
     }
-    console.log('[Auth] Login successful, resolving profile...');
 
-    // Immediately fetch + set user so the portal unlocks without waiting for listener
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-    const userRole = profile?.role || data.user.user_metadata?.role || role || 'user';
-    setCurrentUser(profile || {
+    // IMMEDIATELY unlock the portal — do NOT wait for profiles table
+    const userRole = role || data.user.user_metadata?.role || 'user';
+    setCurrentUser({
       id: data.user.id,
       email: data.user.email,
       role: userRole,
-      name: data.user.user_metadata?.full_name || 'Member'
+      name: data.user.user_metadata?.full_name || email.split('@')[0],
     });
     setCurrentPanel(userRole);
-    addToast('success', 'Identity Verified', 'Welcome back to the dashboard.');
+    addToast('success', 'Welcome Back!', 'Redirecting to your dashboard...');
     return { data };
   };
 
